@@ -1,4 +1,4 @@
-package com.github.taojoe.so_wechat.so_wechat
+package com.github.taojoe.so_wechat
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.engine.plugins.FlutterPlugin

@@ -1,4 +1,4 @@
-group 'com.github.taojoe.so_wechat.so_wechat'
+group 'com.github.taojoe.so_wechat'
 version '1.0-SNAPSHOT'
 
 buildscript {
