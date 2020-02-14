@@ -1,3 +1,39 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.github.taojoe.so_wechat">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <application>
+        <activity
+            android:name=".wxapi.WXEntryActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/DisablePreviewTheme" />
+        <activity
+            android:name=".wxapi.WXPayEntryActivity"
+            android:launchMode="singleTask"
+            android:theme="@style/DisablePreviewTheme" />
+
+        <activity-alias
+            android:name="${applicationId}.wxapi.WXEntryActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:targetActivity="com.github.taojoe.so_wechat.wxapi.WXEntryActivity"
+            android:theme="@style/DisablePreviewTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name="${applicationId}.wxapi.WXPayEntryActivity"
+            android:exported="true"
+            android:launchMode="singleInstance"
+            android:targetActivity="com.github.taojoe.so_wechat.wxapi.WXPayEntryActivity"
+            android:theme="@style/DisablePreviewTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+    </application>
 </manifest>
