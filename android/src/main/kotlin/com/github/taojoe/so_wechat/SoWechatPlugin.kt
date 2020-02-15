@@ -100,7 +100,7 @@ public class SoWechatPlugin: FlutterPlugin, MethodCallHandler {
       val name=call.method.substring(send_prefix.length)
       val req=ReqHelper.dataToReq(name, call.arguments<Map<String, Any?>>())
       if(req!=null){
-        wxapi!!.sendReq(req)
+        result.success(wxapi!!.sendReq(req))
       }else{
         result.notImplemented()
       }
