@@ -15,6 +15,12 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
+  s.dependency 'WechatOpenSDK'
+  s.static_framework = true
+  s.libraries = ["z", "sqlite3.0", "c++"]
+  s.preserve_paths = 'Lib/*.a'
+  s.vendored_libraries = "**/*.a"
+  #s.xcconfig = { 'SWIFT_OBJC_BRIDGING_HEADER' => 'Classes/so_wechat_bridging_header.h' }
   s.platform = :ios, '8.0'
 
   # Flutter.framework does not contain a i386 slice. Only x86_64 simulators are supported.
