@@ -14,6 +14,18 @@ BOOL isBlank(NSString* string){
     return [[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] length] == 0;
 }
 
+BaseReq* dataToReq(NSString* name, id data){
+    PayReq *request = [[PayReq alloc] init];
+    request.openID = [data[@"appId"] stringValue];
+    request.partnerId = [data[@"partnerId"] stringValue];
+    request.prepayId= [data[@"prepayId"] stringValue];
+    request.package = [data[@"packageValue"] stringValue];
+    request.nonceStr= [data[@"nonceStr"] stringValue];
+    request.timeStamp= [data[@"timeStamp"] stringValue];
+    request.sign= [data[@"sign"] stringValue];
+    return request;
+}
+
 @interface SoWechatPlugin() <FlutterStreamHandler>
 @property (copy, nonatomic)   FlutterEventSink   flutterEventSink;
 @end
@@ -28,24 +40,29 @@ BOOL isBlank(NSString* string){
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-  if ([@"initApi" isEqualToString:call.method]) {
-      NSString *appId = call.arguments[@"appId"];
-      if (isBlank(appId)) {
-          result([FlutterError errorWithCode:ERROR_APPID_REQUIRED message:@"" details:appId]);
-          return;
-      }
-      NSString *universalLink = call.arguments[@"universalLink"];
-      if (isBlank(universalLink)) {
-          result([FlutterError errorWithCode:ERROR_UNIVERSAL_LINK_REQUIRED message:@"" details:universalLink]);
-          return;
-      }
-      BOOL isWeChatRegistered = [WXApi registerApp:appId universalLink:universalLink];
-      result(@(isWeChatRegistered));
-  } else if([@"send" isEqualToString:call.method]){
-      result([NSNumber numberWithBool:true]);
-  }else {
-      result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
-  }
+    NSString* sendPrefix=@"send";
+    if ([@"initApi" isEqualToString:call.method]) {
+        NSString *appId = call.arguments[@"appId"];
+        if (isBlank(appId)) {
+            result([FlutterError errorWithCode:ERROR_APPID_REQUIRED message:@"" details:appId]);
+            return;
+        }
+        NSString *universalLink = call.arguments[@"universalLink"];
+        if (isBlank(universalLink)) {
+            result([FlutterError errorWithCode:ERROR_UNIVERSAL_LINK_REQUIRED message:@"" details:universalLink]);
+            return;
+        }
+        BOOL isWeChatRegistered = [WXApi registerApp:appId universalLink:universalLink];
+        result(@(isWeChatRegistered));
+    } else if([call.method hasPrefix:sendPrefix]){
+        NSString* name=[call.method substringFromIndex:sendPrefix.length];
+        BaseReq* request=dataToReq(name, call.arguments);
+        [WXApi sendReq:request completion:^(BOOL success) {
+            result([NSNumber numberWithBool:true]);
+        }];
+    }else {
+        result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+    }
 }
 
 -(FlutterError*)onListenWithArguments:(id)arguments eventSink:(FlutterEventSink)events {
