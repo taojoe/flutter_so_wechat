@@ -1,5 +1,6 @@
 #import "SoWechatPlugin.h"
 #import "WXApi.h"
+#import<objc/runtime.h>
 
 NSString const *ERROR_APPID_REQUIRED = @"APPID_REQUIRED";
 NSString const *ERROR_UNIVERSAL_LINK_REQUIRED = @"UNIVERSAL_LINK_REQUIRED";
@@ -16,7 +17,6 @@ BOOL isBlank(NSString* string){
 
 BaseReq* dataToReq(NSString* name, id data){
     PayReq *request = [[PayReq alloc] init];
-    request.openID = [data[@"appId"] stringValue];
     request.partnerId = [data[@"partnerId"] stringValue];
     request.prepayId= [data[@"prepayId"] stringValue];
     request.package = [data[@"packageValue"] stringValue];
@@ -26,7 +26,21 @@ BaseReq* dataToReq(NSString* name, id data){
     return request;
 }
 
-@interface SoWechatPlugin() <FlutterStreamHandler>
+NSDictionary* respToData(BaseResp* resp){
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    unsigned count;
+    objc_property_t *properties = class_copyPropertyList([resp class], &count);
+
+    for (int i = 0; i < count; i++) {
+        NSString *key = [NSString stringWithUTF8String:property_getName(properties[i])];
+        [dict setObject:[resp valueForKey:key] forKey:key];
+    }
+
+    free(properties);
+    return [NSDictionary dictionaryWithDictionary:dict];
+}
+
+@interface SoWechatPlugin() <FlutterStreamHandler, UIApplicationDelegate, WXApiDelegate>
 @property (copy, nonatomic)   FlutterEventSink   flutterEventSink;
 @end
 
@@ -37,6 +51,7 @@ BaseReq* dataToReq(NSString* name, id data){
     SoWechatPlugin* instance = [[SoWechatPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
     [stream setStreamHandler:instance];
+    [registrar addApplicationDelegate:instance];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -72,6 +87,29 @@ BaseReq* dataToReq(NSString* name, id data){
 
 -(FlutterError*)onCancelWithArguments:(id)arguments {
     return nil;
+}
+
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
+    return [WXApi handleOpenURL:url delegate:self];
+}
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
+    return [WXApi handleOpenURL:url delegate:self];
+}
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
+    return [WXApi handleOpenURL:url delegate:self];
+}
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void(^)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
+    return [WXApi handleOpenUniversalLink:userActivity delegate:self];
+}
+
+- (void)onResp:(BaseResp*)resp{
+    if([resp isKindOfClass:[PayResp class]]){
+        if(self.flutterEventSink!=nil){
+            self.flutterEventSink(respToData(resp));
+        }
+    }
 }
 
 @end
