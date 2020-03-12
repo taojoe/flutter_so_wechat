@@ -1,15 +1,22 @@
 #import "SoWechatPlugin.h"
-#if __has_include(<so_wechat/so_wechat-Swift.h>)
-#import <so_wechat/so_wechat-Swift.h>
-#else
-// Support project import fallback if the generated compatibility header
-// is not copied when this plugin is created as a library.
-// https://forums.swift.org/t/swift-static-libraries-dont-copy-generated-objective-c-header/19816
-#import "so_wechat-Swift.h"
-#endif
 
 @implementation SoWechatPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftSoWechatPlugin registerWithRegistrar:registrar];
+    FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"com.github.taojoe.so_wechat/method" binaryMessenger:[registrar messenger]];
+    FlutterEventChannel* stream = [FlutterEventChannel eventChannelWithName:@"com.github.taojoe.so_wechat/event" binaryMessenger:registrar.messenger];
+    SoWechatPlugin* instance = [[SoWechatPlugin alloc] init];
+    [registrar addMethodCallDelegate:instance channel:channel];
 }
+
+- (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+  if ([@"initApi" isEqualToString:call.method]) {
+      NSString* appId = call.arguments;
+      result(appId);
+  } else if([@"send" isEqualToString:call.method]){
+      result([NSNumber numberWithBool:true]);
+  }else {
+      result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
+  }
+}
+
 @end
