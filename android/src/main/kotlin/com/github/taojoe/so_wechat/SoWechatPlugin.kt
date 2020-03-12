@@ -91,11 +91,11 @@ public class SoWechatPlugin: FlutterPlugin, MethodCallHandler {
   override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
     val send_prefix="send"
     if (call.method == "initApi") {
-      val appId: String? = call.arguments<String>()
+      val appId:String?=call.argument("appId")
       if(wxapi==null){
         wxapi=WXAPIFactory.createWXAPI(context.applicationContext, appId)
       }
-      result.success(appId)
+      result.success(true)
     } else if(call.method.startsWith(send_prefix)) {
       val name=call.method.substring(send_prefix.length)
       val req=ReqHelper.dataToReq(name, call.arguments<Map<String, Any?>>())

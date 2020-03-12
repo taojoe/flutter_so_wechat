@@ -7,8 +7,8 @@ class SoWechat {
   static const EventChannel _streamChannel = const EventChannel('com.github.taojoe.so_wechat/stream');
   static Stream<Map<String, Map>> _eventStream;
   //return appId
-  static Future<String> initApi(String appId) async {
-    return await _methodChannel.invokeMethod<String>('initApi', appId);
+  static Future<bool> initApi(String appId, String universalLink) async {
+    return await _methodChannel.invokeMethod<String>('initApi', {'appId': appId, 'universalLink':universalLink});
   }
   static Future<bool> sendPayReq(PayReq req) async{
     return await _methodChannel.invokeMethod<bool>('sendPayReq', req.toJson());

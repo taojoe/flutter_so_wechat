@@ -1,4 +1,18 @@
 #import "SoWechatPlugin.h"
+#import "WXApi.h"
+
+NSString const *ERROR_APPID_REQUIRED = @"APPID_REQUIRED";
+NSString const *ERROR_UNIVERSAL_LINK_REQUIRED = @"UNIVERSAL_LINK_REQUIRED";
+
+BOOL isBlank(NSString* string){
+    if (string == nil) {
+        return YES;
+    }
+    if ([string isKindOfClass:[NSNull class]]) {
+        return YES;
+    }
+    return [[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] length] == 0;
+}
 
 @interface SoWechatPlugin() <FlutterStreamHandler>
 @property (copy, nonatomic)   FlutterEventSink   flutterEventSink;
@@ -15,8 +29,18 @@
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   if ([@"initApi" isEqualToString:call.method]) {
-      NSString* appId = call.arguments;
-      result(appId);
+      NSString *appId = call.arguments[@"appId"];
+      if (isBlank(appId)) {
+          result([FlutterError errorWithCode:ERROR_APPID_REQUIRED message:@"" details:appId]);
+          return;
+      }
+      NSString *universalLink = call.arguments[@"universalLink"];
+      if (isBlank(universalLink)) {
+          result([FlutterError errorWithCode:ERROR_UNIVERSAL_LINK_REQUIRED message:@"" details:universalLink]);
+          return;
+      }
+      BOOL isWeChatRegistered = [WXApi registerApp:appId universalLink:universalLink];
+      result(@(isWeChatRegistered));
   } else if([@"send" isEqualToString:call.method]){
       result([NSNumber numberWithBool:true]);
   }else {
