@@ -8,7 +8,7 @@ class SoWechat {
   static Stream<Map<String, Map>> _eventStream;
   //return appId
   static Future<bool> initApi(String appId, String universalLink) async {
-    return await _methodChannel.invokeMethod<String>('initApi', {'appId': appId, 'universalLink':universalLink});
+    return await _methodChannel.invokeMethod<bool>('initApi', {'appId': appId, 'universalLink':universalLink});
   }
   static Future<bool> sendPayReq(PayReq req) async{
     return await _methodChannel.invokeMethod<bool>('sendPayReq', req.toJson());
