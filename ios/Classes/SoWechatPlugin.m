@@ -17,13 +17,13 @@ BOOL isBlank(NSString* string){
 
 BaseReq* dataToReq(NSString* name, id data){
     PayReq *request = [[PayReq alloc] init];
+    //request.openID = data[@"appId"];
     request.partnerId = data[@"partnerId"];
     request.prepayId= data[@"prepayId"];
     request.package = data[@"packageValue"];
     request.nonceStr= data[@"nonceStr"];
-    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
-    NSDate *date = [dateFormat dateFromString:data[@"timeStamp"]];
-    request.timeStamp= [date timeIntervalSince1970];
+    NSString* timeStamp=data[@"timeStamp"];
+    request.timeStamp= [timeStamp intValue];
     request.sign= data[@"sign"];
     return request;
 }
