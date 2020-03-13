@@ -17,12 +17,14 @@ BOOL isBlank(NSString* string){
 
 BaseReq* dataToReq(NSString* name, id data){
     PayReq *request = [[PayReq alloc] init];
-    request.partnerId = [data[@"partnerId"] stringValue];
-    request.prepayId= [data[@"prepayId"] stringValue];
-    request.package = [data[@"packageValue"] stringValue];
-    request.nonceStr= [data[@"nonceStr"] stringValue];
-    request.timeStamp= [data[@"timeStamp"] stringValue];
-    request.sign= [data[@"sign"] stringValue];
+    request.partnerId = data[@"partnerId"];
+    request.prepayId= data[@"prepayId"];
+    request.package = data[@"packageValue"];
+    request.nonceStr= data[@"nonceStr"];
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    NSDate *date = [dateFormat dateFromString:data[@"timeStamp"]];
+    request.timeStamp= [date timeIntervalSince1970];
+    request.sign= data[@"sign"];
     return request;
 }
 
@@ -47,7 +49,7 @@ NSDictionary* respToData(BaseResp* resp){
 @implementation SoWechatPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"com.github.taojoe.so_wechat/method" binaryMessenger:[registrar messenger]];
-    FlutterEventChannel* stream = [FlutterEventChannel eventChannelWithName:@"com.github.taojoe.so_wechat/event" binaryMessenger:registrar.messenger];
+    FlutterEventChannel* stream = [FlutterEventChannel eventChannelWithName:@"com.github.taojoe.so_wechat/stream" binaryMessenger:registrar.messenger];
     SoWechatPlugin* instance = [[SoWechatPlugin alloc] init];
     [registrar addMethodCallDelegate:instance channel:channel];
     [stream setStreamHandler:instance];
@@ -55,6 +57,7 @@ NSDictionary* respToData(BaseResp* resp){
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
+    NSLog(@"method call0");
     NSString* sendPrefix=@"send";
     if ([@"initApi" isEqualToString:call.method]) {
         NSString *appId = call.arguments[@"appId"];
@@ -67,14 +70,22 @@ NSDictionary* respToData(BaseResp* resp){
             result([FlutterError errorWithCode:ERROR_UNIVERSAL_LINK_REQUIRED message:@"" details:universalLink]);
             return;
         }
+            NSLog(@"method call1");
         BOOL isWeChatRegistered = [WXApi registerApp:appId universalLink:universalLink];
+            NSLog(@"method call2");
         result(@(isWeChatRegistered));
     } else if([call.method hasPrefix:sendPrefix]){
+        NSLog(@"method call send 0");
         NSString* name=[call.method substringFromIndex:sendPrefix.length];
+        NSLog(@"method call send 1");
+        NSLog(name);
+        NSLog(@"method call send 2");
         BaseReq* request=dataToReq(name, call.arguments);
+        NSLog(@"method call send 3");
         [WXApi sendReq:request completion:^(BOOL success) {
             result([NSNumber numberWithBool:true]);
         }];
+        NSLog(@"method call send 4");
     }else {
         result([@"iOS " stringByAppendingString:[[UIDevice currentDevice] systemVersion]]);
     }
